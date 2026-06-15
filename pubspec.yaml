@@ -1,0 +1,35 @@
+name: nlp
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  langchain:
+  langchain_community: 
+  langchain_openai: 
+  langchain_google:
+  sherpa_onnx:
+  get_it: ^9.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/base-tokens.txt
+    - assets/base-decoder.int8.onnx
+    - assets/base-decoder.onnx
+    - assets/base-encoder.int8.onnx
+    - assets/base-encoder.onnx
+
+    - assets/4_pcm.wav
+    - assets/ar.wav
