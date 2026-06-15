@@ -9,8 +9,6 @@ void main() async {
   runApp(const ChatBotApp());
 }
 
-
-
 class ChatBotApp extends StatelessWidget {
   const ChatBotApp({super.key});
 
@@ -51,15 +49,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [
-    ChatMessage.assistant(
-      'Hi Mahmoud, I am your faculty assistant. Ask me about lectures, schedules, registrations, or university services.',
-    ),
-    ChatMessage.user('What can you help me with today?'),
-    ChatMessage.assistant(
-      'I can answer student questions, summarize instructions, and help prepare clear responses in Arabic or English.',
-    ),
-  ];
+  final List<ChatMessage> _messages = [];
 
   bool _isComposing = false;
   final bool _isGenerating = false;
@@ -162,6 +152,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 20,
@@ -191,28 +182,45 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             Expanded(
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    sliver: SliverList.separated(
+              child: _messages.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer
+                                  .withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 40,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            "Hello, How can I help you today?",
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                       itemCount: _messages.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         return MessageBubble(message: _messages[index]);
                       },
                     ),
-                  ),
-                  if (_isGenerating)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: TypingIndicator(),
-                      ),
-                    ),
-                ],
-              ),
             ),
             QuickPromptBar(
               prompts: const [

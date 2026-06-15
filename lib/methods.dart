@@ -7,6 +7,7 @@ import 'package:langchain_google/langchain_google.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart';
 
 import 'secrets.dart';
+import 'injection.dart';
 
 Future<String> _copyAssetToTempFile(String assetPath) async {
   final cachedFile = File(
@@ -25,13 +26,7 @@ Future<String> _copyAssetToTempFile(String assetPath) async {
 }
 
 Future<String> rag(String question) async {
-  
-  // 1. Create a vector store and add documents to it
-  final vectorStore = MemoryVectorStore(
-    embeddings: GoogleGenerativeAIEmbeddings(apiKey: Secrets.geminiApiKey),
-  );
-
-  await vectorStore.addDocuments(
+  await sl<MemoryVectorStore>().addDocuments(
     documents: [
       Document(pageContent: 'LangChain was created by Harrison'),
       Document(
@@ -40,14 +35,16 @@ Future<String> rag(String question) async {
     ],
   );
 
-  List<double> questionEmbedding = await vectorStore.embeddings.embedQuery(
-    question,
-  );
+  // if the question in english convert it to arabic 
 
-  final results = await vectorStore.similaritySearchByVectorWithScores(
-    embedding: questionEmbedding,
-    config: VectorStoreSimilaritySearch(k: 3, scoreThreshold: 0.80),
-  );
+  List<double> questionEmbedding = await sl<MemoryVectorStore>().embeddings
+      .embedQuery(question);
+
+  final results = await sl<MemoryVectorStore>()
+      .similaritySearchByVectorWithScores(
+        embedding: questionEmbedding,
+        config: VectorStoreSimilaritySearch(scoreThreshold: 0.80),
+      );
 
   if (results.isEmpty) {
     return "I don't have enough information to answer that question.";
