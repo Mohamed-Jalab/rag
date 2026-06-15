@@ -6,6 +6,8 @@ import 'package:langchain/langchain.dart';
 import 'package:langchain_google/langchain_google.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart';
 
+import 'secrets.dart';
+
 Future<String> _copyAssetToTempFile(String assetPath) async {
   final cachedFile = File(
     '${Directory.systemTemp.path}/chatbot_app/$assetPath',
@@ -23,11 +25,10 @@ Future<String> _copyAssetToTempFile(String assetPath) async {
 }
 
 Future<String> rag(String question) async {
-  String giminiApiKey = 'AQ.Ab8RN6KoDw_I5tDq9t0cKLG1PrvKtbgXC0GV9IMwYf7kBc4wWQ';
-
+  
   // 1. Create a vector store and add documents to it
   final vectorStore = MemoryVectorStore(
-    embeddings: GoogleGenerativeAIEmbeddings(apiKey: giminiApiKey),
+    embeddings: GoogleGenerativeAIEmbeddings(apiKey: Secrets.geminiApiKey),
   );
 
   await vectorStore.addDocuments(
@@ -79,7 +80,7 @@ Future<String> rag(String question) async {
 
   // 4. Define the final chain
   final model = ChatGoogleGenerativeAI(
-    apiKey: giminiApiKey,
+    apiKey: Secrets.geminiApiKey,
     defaultOptions: ChatGoogleGenerativeAIOptions(model: 'gemini-2.5-flash'),
   );
   const outputParser = StringOutputParser<ChatResult>();
