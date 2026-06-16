@@ -136,7 +136,7 @@ Future<String> rag(String question) async {
   }
 }
 
-Future<void> asr() async {
+Future<String?> asr(String audioPath) async {
   initBindings();
 
   OfflineRecognizer? recognizer;
@@ -152,7 +152,7 @@ Future<void> asr() async {
 
     final tokensPath = await _copyAssetToTempFile('assets/base-tokens.txt');
 
-    final wavePath = await _copyAssetToTempFile('assets/4_pcm.wav');
+    // final wavePath = await _copyAssetToTempFile('assets/4_pcm.wav');
 
     recognizer = OfflineRecognizer(
       OfflineRecognizerConfig(
@@ -170,7 +170,7 @@ Future<void> asr() async {
       ),
     );
 
-    final wave = readWave(wavePath);
+    final wave = readWave(audioPath);
 
     if (wave.samples.isEmpty || wave.sampleRate <= 0) {
       throw StateError('Failed to load WAV file');
@@ -180,10 +180,11 @@ Future<void> asr() async {
     log('numSamples=${wave.samples.length}');
 
     final text = await recognizeWholeFile(recognizer, wave);
-
     log('Recognized text: $text');
+    return text;
   } catch (e, st) {
     log('ASR failed', error: e, stackTrace: st);
+    return null;
   } finally {
     recognizer?.free();
   }

@@ -85,16 +85,14 @@ class _AudioMessageBubbleState extends State<AudioMessageBubble> {
               ),
             ),
           ),
-
           const SizedBox(width: 12),
-
           Expanded(
             child: AudioFileWaveforms(
               size: const Size(double.infinity, 42),
               playerController: player,
               waveformType: WaveformType.fitWidth,
               playerWaveStyle: PlayerWaveStyle(
-                fixedWaveColor: color.withOpacity(.35),
+                fixedWaveColor: color.withValues(alpha: .35),
                 liveWaveColor: color,
                 spacing: 4,
                 waveThickness: 2,

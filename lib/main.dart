@@ -150,9 +150,11 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _sendMessage(String prompt) async {
+  Future<void> _sendMessage(String prompt, bool isVoice) async {
     bool isEnglish = detectLanguage(prompt) == TextLanguage.english;
-    _messages.add(ChatMessage.text(author: MessageAuthor.user, text: prompt));
+    if (!isVoice) {
+      _messages.add(ChatMessage.text(author: MessageAuthor.user, text: prompt));
+    }
     _messageController.clear();
     _scrollToLatest();
     _isGenerating = true;
@@ -188,20 +190,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _toggleVoiceInput() async {
     if (_isRecognizing) {
+      await stopRecording();
       setState(() => _isRecognizing = false);
       return;
     }
-
+    await startRecording();
     setState(() => _isRecognizing = true);
 
     if (!mounted) return;
     setState(() {
+      if (_audioPath != null) {
+        _messages.add(ChatMessage.audio(audioPath: _audioPath!));
+      }
       _isRecognizing = false;
-      _messageController.text = 'When is the next faculty registration date?';
-      _messageController.selection = TextSelection.collapsed(
-        offset: _messageController.text.length,
-      );
     });
+    String? prompt = await asr(_audioPath!);
+    if (prompt == null) return;
+    _sendMessage(prompt, true);
   }
 
   void _scrollToLatest() {
@@ -239,11 +244,6 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _isRecognizing = false;
     });
-
-    if (_audioPath != null) {
-      // widget.onAudioRecorded?.call(_audioPath!);
-      print(_audioPath);
-    }
   }
 
   @override
@@ -337,7 +337,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _messageController,
                     isComposing: _isComposing,
                     isRecognizing: _isRecognizing,
-                    onSend: () => _sendMessage(_messageController.text),
+                    onSend: () => _sendMessage(_messageController.text, false),
                     onVoicePressed: _toggleVoiceInput,
                   ),
                 ],
@@ -699,7 +699,7 @@ class ChatMessage {
     return ChatMessage(author: author, type: MessageType.text, text: text);
   }
 
-  factory ChatMessage.audio({required String id, required String audioPath}) {
+  factory ChatMessage.audio({required String audioPath}) {
     return ChatMessage(
       author: MessageAuthor.user,
       type: MessageType.audio,
