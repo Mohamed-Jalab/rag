@@ -11,4 +11,5 @@ Future<void> init() async {
     embeddings: GoogleGenerativeAIEmbeddings(apiKey: Secrets.geminiApiKey),
   );
   sl.registerLazySingleton(() => vectorStore);
+  
 }

@@ -15,6 +15,12 @@ dependencies:
   langchain_google:
   sherpa_onnx:
   get_it: ^9.2.1
+  shimmer: ^3.0.0
+  translator: ^1.0.4+1
+  audio_waveforms: ^2.0.2
+  path_provider: ^2.1.6
+  permission_handler: ^12.0.3
+  just_audio: ^0.10.5
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +36,6 @@ flutter:
     - assets/base-decoder.onnx
     - assets/base-encoder.int8.onnx
     - assets/base-encoder.onnx
-
+    - assets/faculties.jsonl
     - assets/4_pcm.wav
     - assets/ar.wav
