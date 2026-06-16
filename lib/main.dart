@@ -1,8 +1,10 @@
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:translator/translator.dart';
 
 import 'audio_bubble.dart';
@@ -12,6 +14,8 @@ import 'methods.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // MediaKit.ensureInitialized();
+
   await SystemChannels.textInput.invokeMethod('TextInput.hide');
   await init();
   runApp(const ChatBotApp());
@@ -104,7 +108,7 @@ bool _isGenerating = false;
 bool _isRecognizing = false;
 
 class _ChatScreenState extends State<ChatScreen> {
-  late final RecorderController _recorderController;
+  late final AudioRecorder _recorderController;
   String? _audioPath;
 
   final _messageController = TextEditingController();
@@ -130,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     _messageController.addListener(_handleComposerChanged);
 
-    _recorderController = RecorderController();
+    _recorderController = AudioRecorder();
   }
 
   @override
@@ -191,22 +195,39 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _toggleVoiceInput() async {
     if (_isRecognizing) {
       await stopRecording();
-      setState(() => _isRecognizing = false);
+      setState(() {
+        _isGenerating = true;
+        if (_audioPath != null) {
+          _messages.add(ChatMessage.audio(audioPath: _audioPath!));
+        }
+        _isRecognizing = false;
+      });
+
+      String? prompt;
+      await asr(_audioPath!)
+          .then((response) {
+            prompt = response;
+          })
+          .catchError((error) {
+            print(error);
+            _messages.add(
+              ChatMessage.text(
+                author: MessageAuthor.assistant,
+                text: "can't read the audio",
+              ),
+            );
+          });
+      setState(() {});
+
+      if (prompt == null) return;
+      _sendMessage(prompt!, true);
+      // setState(() => _isRecognizing = false);
       return;
     }
     await startRecording();
     setState(() => _isRecognizing = true);
 
     if (!mounted) return;
-    setState(() {
-      if (_audioPath != null) {
-        _messages.add(ChatMessage.audio(audioPath: _audioPath!));
-      }
-      _isRecognizing = false;
-    });
-    String? prompt = await asr(_audioPath!);
-    if (prompt == null) return;
-    _sendMessage(prompt, true);
   }
 
   void _scrollToLatest() {
@@ -220,18 +241,18 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> startRecording() async {
-    final status = await Permission.microphone.request();
 
-    if (!status.isGranted) {
-      return;
-    }
+  Future<void> startRecording() async {
+    if (!await _recorderController.hasPermission()) return;
+
     final dir = await getTemporaryDirectory();
 
     _audioPath =
         '${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
-    await _recorderController.record(path: _audioPath!);
+    await _recorderController.start(RecordConfig(
+
+    ), path: _audioPath!);
 
     setState(() {
       _isRecognizing = true;
@@ -239,7 +260,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> stopRecording() async {
-    await _recorderController.stop();
+    _audioPath = await _recorderController.stop();
 
     setState(() {
       _isRecognizing = false;
@@ -357,7 +378,7 @@ class ChatComposer extends StatefulWidget {
     required this.onVoicePressed,
     super.key,
   });
-  final RecorderController recorderController;
+  final AudioRecorder recorderController;
   final TextEditingController controller;
   final bool isComposing;
   final bool isRecognizing;
@@ -369,7 +390,7 @@ class ChatComposer extends StatefulWidget {
 }
 
 class _ChatComposerState extends State<ChatComposer> {
-  late RecorderController _recorderController;
+  late AudioRecorder _recorderController;
   late TextEditingController _controller;
   late bool isVoice = true;
 
@@ -451,16 +472,17 @@ class _ChatComposerState extends State<ChatComposer> {
                           const Icon(Icons.mic, color: Colors.red),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: AudioWaveforms(
-                              enableGesture: false,
-                              size: Size(MediaQuery.of(context).size.width, 50),
-                              recorderController: _recorderController,
-                              waveStyle: const WaveStyle(
-                                waveColor: Colors.blue,
-                                extendWaveform: true,
-                                showMiddleLine: false,
-                              ),
-                            ),
+                            child: Text("record"),
+                            // AudioWaveforms(
+                            //   enableGesture: false,
+                            //   size: Size(MediaQuery.of(context).size.width, 50),
+                            //   recorderController: _recorderController,
+                            //   waveStyle: const WaveStyle(
+                            //     waveColor: Colors.blue,
+                            //     extendWaveform: true,
+                            //     showMiddleLine: false,
+                            //   ),
+                            // ),
                           ),
                         ],
                       ),
@@ -508,12 +530,7 @@ class _ChatComposerState extends State<ChatComposer> {
                               : 'Voice input',
                           onPressed: widget.onVoicePressed,
                           icon: widget.isRecognizing
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.2,
-                                  ),
-                                )
+                              ? const Icon(Icons.stop_rounded)
                               : const Icon(Icons.mic_none_outlined),
                         )
                       : IconButton.filled(

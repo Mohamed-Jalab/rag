@@ -46,6 +46,7 @@ app.*.map.json
 
 # model files
 *.onnx
+*.onnx.data
 
 # secrets files
 secrets.dart

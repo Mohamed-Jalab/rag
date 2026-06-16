@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_google/langchain_google.dart';
@@ -56,6 +57,14 @@ Future<List<Map<String, dynamic>>> _readJsonlFromAssets(
   }
 
   return jsonList;
+}
+
+Future<String> _convertToWav(String inputPath) async {
+  final wavPath = inputPath.replaceAll('.m4a', '.wav');
+
+  await FFmpegKit.execute('-i "$inputPath" -ar 16000 -ac 1 "$wavPath"');
+
+  return wavPath;
 }
 
 Future<void> loadSystem() async {
@@ -142,15 +151,18 @@ Future<String?> asr(String audioPath) async {
   OfflineRecognizer? recognizer;
 
   try {
-    final encoderPath = await _copyAssetToTempFile(
-      'assets/base-encoder.int8.onnx',
+    final encoderPath = await _copyAssetToTempFile('assets/encoder.int8.onnx');
+
+    final decoderPath = await _copyAssetToTempFile('assets/decoder.int8.onnx');
+
+    final dataPath = await _copyAssetToTempFile(
+      'assets/encoder.int8.onnx.data',
     );
 
-    final decoderPath = await _copyAssetToTempFile(
-      'assets/base-decoder.int8.onnx',
-    );
+    log('encoder=$encoderPath');
+    log('encoder data=$dataPath');
 
-    final tokensPath = await _copyAssetToTempFile('assets/base-tokens.txt');
+    final tokensPath = await _copyAssetToTempFile('assets/tokens.txt');
 
     // final wavePath = await _copyAssetToTempFile('assets/4_pcm.wav');
 
@@ -170,10 +182,11 @@ Future<String?> asr(String audioPath) async {
       ),
     );
 
-    final wave = readWave(audioPath);
+    final wavPath = await _convertToWav(audioPath);
+    final wave = readWave(wavPath);
 
     if (wave.samples.isEmpty || wave.sampleRate <= 0) {
-      throw StateError('Failed to load WAV file');
+      return Future.error('Failed to load WAV file');
     }
 
     log('sampleRate=${wave.sampleRate}');

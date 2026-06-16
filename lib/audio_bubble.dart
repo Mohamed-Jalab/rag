@@ -1,4 +1,3 @@
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 
 class AudioMessageBubble extends StatefulWidget {
@@ -16,7 +15,7 @@ class AudioMessageBubble extends StatefulWidget {
 }
 
 class _AudioMessageBubbleState extends State<AudioMessageBubble> {
-  final player = PlayerController();
+  // late Player player;
 
   bool isPlaying = false;
   Duration duration = Duration.zero;
@@ -29,23 +28,27 @@ class _AudioMessageBubbleState extends State<AudioMessageBubble> {
   }
 
   Future<void> _initPlayer() async {
-    await player.preparePlayer(
-      path: widget.path,
-      shouldExtractWaveform: true,
-      noOfSamples: 80,
-    );
+  //   player = Player();
+  //   await player.open(Media(widget.path));
 
-    duration = Duration(milliseconds: player.maxDuration);
+    // duration = Duration(milliseconds: player.maxDuration);
 
     setState(() {});
   }
 
   Future<void> _togglePlay() async {
-    if (isPlaying) {
-      await player.pausePlayer();
-    } else {
-      await player.startPlayer();
-    }
+    // if (isPlaying) {
+    //   await player.play();
+    // } else {
+    //   await player.pause();
+    // }
+    // if (player.playing) {
+    //   player.positionStream.listen((pos) {
+    //     setState(() {
+    //       position = pos;
+    //     });
+    //   });
+    // }
 
     setState(() {
       isPlaying = !isPlaying;
@@ -54,7 +57,7 @@ class _AudioMessageBubbleState extends State<AudioMessageBubble> {
 
   @override
   void dispose() {
-    player.dispose();
+    // player.dispose();
     super.dispose();
   }
 
@@ -87,18 +90,19 @@ class _AudioMessageBubbleState extends State<AudioMessageBubble> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: AudioFileWaveforms(
-              size: const Size(double.infinity, 42),
-              playerController: player,
-              waveformType: WaveformType.fitWidth,
-              playerWaveStyle: PlayerWaveStyle(
-                fixedWaveColor: color.withValues(alpha: .35),
-                liveWaveColor: color,
-                spacing: 4,
-                waveThickness: 2,
-                seekLineColor: Colors.transparent,
-              ),
-            ),
+            child: Text("recording ..."),
+            // AudioFileWaveforms(
+            //   size: const Size(double.infinity, 42),
+            //   playerController: player,
+            //   waveformType: WaveformType.fitWidth,
+            //   playerWaveStyle: PlayerWaveStyle(
+            //     fixedWaveColor: color.withValues(alpha: .35),
+            //     liveWaveColor: color,
+            //     spacing: 4,
+            //     waveThickness: 2,
+            //     seekLineColor: Colors.transparent,
+            //   ),
+            // ),
           ),
 
           const SizedBox(width: 8),

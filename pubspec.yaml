@@ -17,25 +17,35 @@ dependencies:
   get_it: ^9.2.1
   shimmer: ^3.0.0
   translator: ^1.0.4+1
-  audio_waveforms: ^2.0.2
+  # audio_waveforms: ^2.0.2
   path_provider: ^2.1.6
   permission_handler: ^12.0.3
-  just_audio: ^0.10.5
+  ffmpeg_kit_flutter_new: ^4.2.1
+  record: ^6.2.1
+  # media_kit: ^1.2.6
+  # media_kit_video: ^1.2.0
+  # media_kit_libs_linux: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/aleppo_ai.png"
+  adaptive_icon_background: "#1D6F8F"  # Using the dark blue color code
+  adaptive_icon_foreground: "assets/aleppo_ai.png"
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/base-tokens.txt
-    - assets/base-decoder.int8.onnx
-    - assets/base-decoder.onnx
-    - assets/base-encoder.int8.onnx
-    - assets/base-encoder.onnx
+    - assets/tokens.txt
+    - assets/decoder.int8.onnx
+    # - assets/decoder.onnx
+    - assets/encoder.int8.onnx
+    - assets/encoder.int8.onnx.data
     - assets/faculties.jsonl
-    - assets/4_pcm.wav
-    - assets/ar.wav
+    - assets/aleppo_ai.png
