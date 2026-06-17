@@ -89,8 +89,9 @@ Future<String> _convertToWav(String inputPath) async {
 Future<void> loadSystem() async {
   try {
     List<Map<String, dynamic>> dataset = await _readJsonlFromAssets(
-      "assets/faculties.jsonl",
+      "assets/informatics.jsonl",
     );
+    dataset = dataset.sublist(0, 50);
     print("${dataset.length} records");
     log("start Loading ...");
     await sl<MemoryVectorStore>().addDocuments(
