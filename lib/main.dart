@@ -494,7 +494,7 @@ class _ChatComposerState extends State<ChatComposer> {
                       maxLines: 5,
                       textInputAction: TextInputAction.newline,
                       decoration: InputDecoration(
-                        hintText: 'Ask anything about your faculty...',
+                        hintText: 'Ask Aleppo University AI...',
                         filled: true,
                         fillColor: const Color(0xFFF1F4F7),
                         contentPadding: const EdgeInsets.symmetric(

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_google/langchain_google.dart';
@@ -59,10 +58,30 @@ Future<List<Map<String, dynamic>>> _readJsonlFromAssets(
   return jsonList;
 }
 
+// Future<String> _convertToWav(String inputPath) async {
+//   final wavPath = inputPath.replaceAll('.m4a', '.wav');
+
+//   await FFmpegKit.execute('-y -i "$inputPath" -ar 16000 -ac 1 "$wavPath"');
+
+//   return wavPath;
+// }
 Future<String> _convertToWav(String inputPath) async {
   final wavPath = inputPath.replaceAll('.m4a', '.wav');
 
-  await FFmpegKit.execute('-i "$inputPath" -ar 16000 -ac 1 "$wavPath"');
+  final result = await Process.run('ffmpeg', [
+    '-y',
+    '-i',
+    inputPath,
+    '-ar',
+    '16000',
+    '-ac',
+    '1',
+    wavPath,
+  ]);
+
+  if (result.exitCode != 0) {
+    throw Exception(result.stderr);
+  }
 
   return wavPath;
 }
@@ -72,7 +91,6 @@ Future<void> loadSystem() async {
     List<Map<String, dynamic>> dataset = await _readJsonlFromAssets(
       "assets/faculties.jsonl",
     );
-    dataset = dataset.sublist(0, 5);
     print("${dataset.length} records");
     log("start Loading ...");
     await sl<MemoryVectorStore>().addDocuments(
@@ -103,7 +121,8 @@ Future<String> rag(String question) async {
         );
 
     if (results.isEmpty) {
-      return "I don't have enough information to answer that question.";
+      return "ليس لدي معلومات كافية للإجابة على هذا السؤال.";
+      // return "I don't have enough information to answer that question.";
     }
 
     String context = '';
@@ -164,16 +183,33 @@ Future<String?> asr(String audioPath) async {
 
     final tokensPath = await _copyAssetToTempFile('assets/tokens.txt');
 
-    // final wavePath = await _copyAssetToTempFile('assets/4_pcm.wav');
+    // final wavePath = await _copyAssetToTempFile('assets/me.wav');
+    // final m4aPath = await _copyAssetToTempFile('assets/me3.m4a');
 
+    // recognizer = OfflineRecognizer(
+    //   OfflineRecognizerConfig(
+    //     model: OfflineModelConfig(
+    //       whisper: OfflineWhisperModelConfig(
+    //         encoder: encoderPath,
+    //         decoder: decoderPath,
+    //         language: 'ar',
+    //         task: 'transcribe',
+    //       ),
+    //       tokens: tokensPath,
+    //       provider: 'xnnpack',
+    //       debug: true,
+    //     ),
+    //   ),
+    // );
     recognizer = OfflineRecognizer(
       OfflineRecognizerConfig(
         model: OfflineModelConfig(
-          whisper: OfflineWhisperModelConfig(
+          cohereTranscribe: OfflineCohereTranscribeModelConfig(
             encoder: encoderPath,
             decoder: decoderPath,
-            language: 'ar',
-            task: 'transcribe',
+            language: 'en',
+            usePunct: true,
+            useItn: true,
           ),
           tokens: tokensPath,
           provider: 'xnnpack',
@@ -182,9 +218,10 @@ Future<String?> asr(String audioPath) async {
       ),
     );
 
-    final wavPath = await _convertToWav(audioPath);
-    final wave = readWave(wavPath);
-
+    final wavePath = await _convertToWav(audioPath);
+    final wave = readWave(wavePath);
+    log(wave.sampleRate.toString());
+    log(wave.samples.take(10).toList().toString());
     if (wave.samples.isEmpty || wave.sampleRate <= 0) {
       return Future.error('Failed to load WAV file');
     }
