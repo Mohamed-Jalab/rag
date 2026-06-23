@@ -42,11 +42,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/tokens.txt
-    - assets/decoder.int8.onnx
-    # - assets/decoder.onnx
-    - assets/encoder.int8.onnx
-    - assets/encoder.int8.onnx.data
+    # - assets/tokens.txt
+    # - assets/decoder.int8.onnx
+    # # - assets/decoder.onnx
+    # - assets/encoder.int8.onnx
+    # - assets/encoder.int8.onnx.data
     - assets/faculties.jsonl
     - assets/aleppo_ai.png
     - assets/me.wav

@@ -519,29 +519,32 @@ class _ChatComposerState extends State<ChatComposer> {
                         : Icons.arrow_upward_rounded,
                   ),
                 )
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  switchInCurve: Curves.fastLinearToSlowEaseIn,
-                  switchOutCurve: Curves.fastLinearToSlowEaseIn,
-                  child: isVoice
-                      ? IconButton.filledTonal(
-                          tooltip: widget.isRecognizing
-                              ? 'Stop voice input'
-                              : 'Voice input',
-                          onPressed: widget.onVoicePressed,
-                          icon: widget.isRecognizing
-                              ? const Icon(Icons.stop_rounded)
-                              : const Icon(Icons.mic_none_outlined),
-                        )
-                      : IconButton.filled(
+              : 
+              IconButton.filled(
                           key: const Key('sendMessageButton'),
                           tooltip: 'Send message',
                           onPressed: widget.isComposing
                               ? () => widget.onSend()
                               : null,
                           icon: const Icon(Icons.arrow_upward_rounded),
-                        ),
-                ),
+                        )
+              
+              // AnimatedSwitcher(
+              //     duration: const Duration(milliseconds: 500),
+              //     switchInCurve: Curves.fastLinearToSlowEaseIn,
+              //     switchOutCurve: Curves.fastLinearToSlowEaseIn,
+              //     child: isVoice
+              //         ? IconButton.filledTonal(
+              //             tooltip: widget.isRecognizing
+              //                 ? 'Stop voice input'
+              //                 : 'Voice input',
+              //             onPressed: widget.onVoicePressed,
+              //             icon: widget.isRecognizing
+              //                 ? const Icon(Icons.stop_rounded)
+              //                 : const Icon(Icons.mic_none_outlined),
+              //           )
+              //         : ,
+              //   ),
         ],
       ),
     );
